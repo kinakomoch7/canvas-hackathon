@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const res = await fetch(
-      `https://nu.instructure.com/api/v1/calendar_events`,
+      `https://nu.instructure.com/api/v1/users/self/todo`,
       {
         method: "GET",
         headers: {
@@ -13,7 +13,7 @@ export async function GET() {
     );
     const data = await res.json();
 
-    return NextResponse.json({ data });
+    return NextResponse.json(data);
   } catch (error) {
     console.log(error);
     return NextResponse.error();
