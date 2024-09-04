@@ -12,7 +12,7 @@ const CoursesPercentage = (props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:3005/api/scores`)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/scores/${token}`)
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
