@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState } from "react";
-import { Card } from "../ui/card";
-import { Accordion, AccordionTrigger, AccordionContent, AccordionItem  } from "../ui/accordion";
 import CourseCard from "./CourseCard";
 
-const CoursesPercentage = () => {
+const CoursesPercentage = (props) => {
+
+  const { token } = props;
+
   const [data, setData] = useState(null);
 
 

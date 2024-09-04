@@ -67,3 +67,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes gaming-background {
+  0% {
+    background-color: #ff0000;
+  } /* 赤 */
+  20% {
+    background-color: #00ff00;
+  } /* 緑 */
+  40% {
+    background-color: #0000ff;
+  } /* 青 */
+  60% {
+    background-color: #ff00ff;
+  } /* ピンク */
+  80% {
+    background-color: #00ffff;
+  } /* シアン */
+  100% {
+    background-color: #ff0000;
+  } /* 赤に戻る */
+}
+
+.gaming-bg {
+  animation: gaming-background 10s infinite;
+}

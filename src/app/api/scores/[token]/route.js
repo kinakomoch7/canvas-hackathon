@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req, { params }) {
+  const { token } = params;
+
   try {
     // ユーザーのコース一覧を取得
     const courseRes = await fetch(`https://nu.instructure.com/api/v1/courses`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_CANVAS_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     const courses = await courseRes.json();
@@ -19,7 +21,7 @@ export async function GET() {
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_CANVAS_TOKEN}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -33,7 +35,7 @@ export async function GET() {
               {
                 method: "GET",
                 headers: {
-                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_CANVAS_TOKEN}`,
+                  Authorization: `Bearer ${token}`,
                 },
               }
             );

@@ -16,8 +16,12 @@ const CourseCard = (props) => {
   return (
     <Card key={course.courseId} className="m-3 p-5 min-w-72">
       <div className="text-md font-semibold">{course.courseName}</div>
-      <p>合計点: {course.sumScore} / {course.sumFullScore}</p>
-      <p>提出: {course.submissionPercentage < 0 ? "課題がありません" : `${course.submissionPercentage}%`}</p>
+      <div className="flex justify-between">
+        <p>採点済み点数: {course.sumScore} / {course.sumFullAlreadyScored}</p>
+        <p>最大点: {course.sumFullScore}</p>
+      </div>
+
+      <p>提出率: {course.submissionPercentage < 0 ? "課題がありません" : `${course.submissionPercentage}%`}</p>
       {(course.details.length == 0) ? <></> :
       <Accordion key={course.courseId} type="single" collapsible>
       <AccordionItem value={course.courseName} >
@@ -29,9 +33,9 @@ const CourseCard = (props) => {
           <ul>
             {course.details.map((detail) => (
               <li key={detail.id} className="mt-2 mb-2 border-b-2">
-                <p>{detail.name}</p>
+                <div className="font-medium">{detail.name}</div>
                 <div style={{ display: "flex", justifyContent:"space-between" }}>
-                  <p>スコア:  {detail.score ? `${detail.score}/${detail.fullScore}` : `0/${detail.fullScore}`}</p>
+                  <div className="flex">スコア:  {detail.score ? `${detail.score}/${detail.fullScore}` : <div className="text-red-600">採点されてません</div>}</div>
                   <p>{detail.isSubmitted ? <div className="text-green-500">提出済</div> : <div className="text-red-500">未提出</div>}</p>
                 </div>
                 <p>締め切り日: {formatDate(detail.submittedDueDate)}</p>
