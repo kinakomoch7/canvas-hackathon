@@ -2,31 +2,20 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const courseId = 50836;
-
-    const res = await fetch(
-      `https://nu.instructure.com/api/v1/courses/${courseId}/assignments?per_page=100`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CANVAS_TOKEN}`,
-        },
-      }
-    );
-    const data = await res.json();
-
-    const assignmentList = data.map((assignment) => {
-      return {
-        id: assignment.id,
-        name: assignment.name,
-        fullScore: assignment.points_possible,
-      };
+    // ユーザーのコース一覧を取得
+    const courseRes = await fetch(`https://nu.instructure.com/api/v1/courses`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_CANVAS_TOKEN}`,
+      },
     });
+    const courses = await courseRes.json();
 
-    const assignmentScores = await Promise.all(
-      assignmentList.map(async (assignment) => {
-        const res = await fetch(
-          `https://nu.instructure.com/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions/self`,
+    // 各コースの課題情報を取得
+    const courseAssignments = await Promise.all(
+      courses.map(async (course) => {
+        const assignmentRes = await fetch(
+          `https://nu.instructure.com/api/v1/courses/${course.id}/assignments?per_page=100`,
           {
             method: "GET",
             headers: {
@@ -34,20 +23,67 @@ export async function GET() {
             },
           }
         );
-        const data = await res.json();
+        const assignments = await assignmentRes.json();
 
-        const score = data.score || data.score === undefined ? 0 : data.score;
+        // 課題ごとの詳細を取得
+        const assignmentScores = await Promise.all(
+          assignments.map(async (assignment) => {
+            const submissionRes = await fetch(
+              `https://nu.instructure.com/api/v1/courses/${course.id}/assignments/${assignment.id}/submissions/self`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_CANVAS_TOKEN}`,
+                },
+              }
+            );
+            const submission = await submissionRes.json();
+
+            return {
+              id: assignment.id,
+              name: assignment.name,
+              score: submission.score,
+              fullScore: assignment.points_possible,
+              isSubmitted: submission.submitted_at !== null,
+              submittedDueDate: assignment.due_at,
+            };
+          })
+        );
+
+        const sumScore = assignmentScores.reduce((acc, curr) => {
+          return curr.score !== null && curr.score !== undefined
+            ? acc + curr.score
+            : acc;
+        }, 0);
+
+        const sumFullScore = assignmentScores.reduce((acc, curr) => {
+          return acc + curr.fullScore;
+        }, 0);
+
+        const submissionPercentage =
+          sumFullScore != 0
+            ? (
+                (assignmentScores.reduce((acc, curr) => {
+                  return curr.isSubmitted ? acc + 1 : acc;
+                }, 0) /
+                  assignmentScores.length) *
+                100
+              ).toFixed(2)
+            : -1;
 
         return {
-          id: assignment.id,
-          name: assignment.name,
-          score: data.score,
-          fullScore: assignment.fullScore,
+          courseId: course.id,
+          courseName: course.name,
+          sumScorePercentage: ((sumScore / sumFullScore) * 100).toFixed(2),
+          sumScore: sumScore,
+          sumFullScore: sumFullScore,
+          submissionPercentage: submissionPercentage,
+          details: assignmentScores,
         };
       })
     );
 
-    return NextResponse.json(assignmentScores);
+    return NextResponse.json(courseAssignments);
   } catch (error) {
     console.log(error);
     return NextResponse.error();
